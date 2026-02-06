@@ -4,8 +4,6 @@ import { Difficulty } from "../lib/enums";
 import type { HSKWord } from "../lib/interfaces";
 import { Button } from "@mui/material";
 import { useNavigate } from "react-router";
-import { useEffect } from "react";
-import { useHeaderData } from "./Page";
 import { ArrowForward, ContentCopy } from "@mui/icons-material";
 
 interface DailyResultsProps {

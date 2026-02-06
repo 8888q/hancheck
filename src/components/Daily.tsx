@@ -1,11 +1,11 @@
 /** @jsxImportSource @emotion/react */
-import { useEffect, useMemo, useRef, useState, type InputEventHandler } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { HSKWord } from "../lib/interfaces";
 import hsk_dict from "../lib/data.json";
 import seedrandom from "seedrandom";
 import { Difficulty } from "../lib/enums";
 import { Button, IconButton, TextField } from "@mui/material";
-import { ArrowForward, ArrowRight, PlayArrow } from "@mui/icons-material";
+import { ArrowForward, PlayArrow } from "@mui/icons-material";
 import { DailyResults } from "./DailyResults";
 import { useHeaderData } from "./Page";
 
