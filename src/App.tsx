@@ -7,7 +7,7 @@ function App() {
 //   const [count, setCount] = useState(0)
 
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/hancheck">
       <Routes>
         <Route index element={<Homepage />} />
         <Route path="/daily" element={<Daily />} />
