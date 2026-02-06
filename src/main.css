@@ -1,0 +1,34 @@
+p {
+    font-family: 'Roboto', sans-serif;
+}
+
+h1 {
+    font-family: 'Roboto', sans-serif;
+    font-size: 60px;
+    text-align: center;
+}
+
+h2 {
+    font-family: 'Roboto', sans-serif;
+    font-size: 32px;
+}
+
+h3 {
+    font-family: 'Roboto', sans-serif;
+}
+
+h4 {
+    font-family: 'Roboto', sans-serif;
+}
+
+table {
+    border-spacing: 2em 2px;
+}
+
+td {
+    font-family: 'Roboto', sans-serif;
+}
+
+.han-display {
+    font-family: 'Noto Serif SC', serif;
+}

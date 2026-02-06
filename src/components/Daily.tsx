@@ -1,12 +1,13 @@
 /** @jsxImportSource @emotion/react */
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type InputEventHandler } from "react";
 import type { HSKWord } from "../lib/interfaces";
 import hsk_dict from "../lib/data.json";
 import seedrandom from "seedrandom";
 import { Difficulty } from "../lib/enums";
 import { Button, IconButton, TextField } from "@mui/material";
-import { PlayArrow } from "@mui/icons-material";
+import { ArrowForward, ArrowRight, PlayArrow } from "@mui/icons-material";
 import { DailyResults } from "./DailyResults";
+import { useHeaderData } from "./Page";
 
 function getSeed(): number {
     const now_num = (new Date()).getTime();
@@ -66,15 +67,32 @@ export function Daily() {
     const [difficulty, setDifficulty] = useState(Difficulty.Easy);
     const [state, setState] = useState(DailyState.Playing);
     const [currentWords, setCurrentWords] = useState<HSKWord[]>(easyWords);
-    const [selectedWord, setSelectedWord] = useState<HSKWord | null>(null);
+    const [selectedWord, setSelectedWord] = useState<HSKWord | null>(easyWords[0]);
     const [answerField, setAnswerField] = useState<string>("");
     const [roundAnswers, setRoundAnswers] = useState<(boolean | null)[]>([null, null, null, null, null]);
     const [allAnswers, setAllAnswers] = useState<string[][]>([["", "", "", "", ""], ["", "", "", "", ""], ["", "", "", "", ""]]);
     const answerFieldRef = useRef<HTMLInputElement>(null);
 
+    const { title, setTitle } = useHeaderData();
+    useEffect(() => {
+        if (state === DailyState.Playing) {
+            setTitle("Daily");
+        } else {
+            setTitle("Results");
+        }
+    }, [title,state]);
+
     const continueable = useMemo(() => {
         return roundAnswers.every(answer => answer !== null);
     }, [roundAnswers]);
+
+    function selectNextWord(prevIndex: number): number {
+        let nextWordIndex = prevIndex + 1;
+        while (nextWordIndex != prevIndex && roundAnswers[nextWordIndex] !== null) {
+            nextWordIndex = (nextWordIndex + 1) % 5;
+        }
+        return nextWordIndex;
+    }
 
     function handleAnswer(difficulty: Difficulty, index: number, answer: string) {
         if (!selectedWord) return;
@@ -84,31 +102,39 @@ export function Daily() {
         newAllAnswers[difficulty][index] = answer;
         setRoundAnswers(newRoundAnswers);
         setAllAnswers(newAllAnswers);
-        setSelectedWord(null);
+        if(!newRoundAnswers.every(answer => answer !== null)) {
+            setSelectedWord(currentWords[selectNextWord(index)]);
+        } else {
+            setSelectedWord(null);
+        }
         setAnswerField("");
     }
 
     function handleContinue() {
-        setSelectedWord(null);
         setAnswerField("");
         setRoundAnswers([null, null, null, null, null]);
         switch (difficulty) {
             case Difficulty.Easy:
                 setCurrentWords(mediumWords);
                 setDifficulty(Difficulty.Medium);
+                setSelectedWord(mediumWords[0]);
                 break;
             case Difficulty.Medium:
                 setCurrentWords(hardWords);
                 setDifficulty(Difficulty.Hard);
+                setSelectedWord(hardWords[0]);
                 break;
             case Difficulty.Hard:
                 setState(DailyState.Results);
                 break;
         }
+        setTimeout(() => {
+            answerFieldRef.current?.focus();
+        }, 100);
     }
 
     if (state === DailyState.Results) {
-        return <DailyResults allAnswers={allAnswers} easyWords={easyWords} mediumWords={mediumWords} hardWords={hardWords} />
+        return <DailyResults allAnswers={allAnswers} easyWords={easyWords} mediumWords={mediumWords} hardWords={hardWords} seed={seed} />
     }
 
     return (
@@ -116,16 +142,15 @@ export function Daily() {
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            justifyContent: "center",
+            // justifyContent: "center",
             height: "100vh",
             width: "100vw",
             gap: "10px",
         }}>
-            <h1>Daily</h1>
             <p
+                className="han-display"
                 css={{
-                    fontSize: "60px",
-                    fontWeight: "bold",
+                    fontSize: "120px",
                 }}
             >
                 {selectedWord?.simplified ?? "?"}
@@ -137,18 +162,28 @@ export function Daily() {
             }}>
                 {
                     currentWords.map((word, index) => {
+                        let backgroundColor = "none";
+                        if (roundAnswers[index] === true) {
+                            backgroundColor = "rgb(121, 177, 90)";
+                        } else if (roundAnswers[index] === false) {
+                            backgroundColor = "rgb(210, 88, 66)";
+                        }
+                        if (selectedWord === word) {
+                            backgroundColor = "pink";
+                        }
                         return (
                             <IconButton
                                 key={word.simplified}
                                 sx={{
                                     border: "1px solid black",
-                                    backgroundColor: (roundAnswers[index] === true ? "green" : (roundAnswers[index] === false ? "red" : "none")),
+                                    backgroundColor: backgroundColor,
                                     cursor: (roundAnswers[index] !== null ? "default" : "pointer"),
                                     "&:hover": (roundAnswers[index] !== null ? {
                                         backgroundColor: (roundAnswers[index] === true ? "green" : (roundAnswers[index] === false ? "red" : "none")),
                                     } : {
                                         backgroundColor: "none",
                                     }),
+                                    boxShadow: selectedWord === word ? "0 0 10px 0 rgba(0, 0, 0, 0.5)" : "none",
                                 }}
                                 onClick={() => {
                                     if (roundAnswers[index] === null) {
@@ -164,23 +199,48 @@ export function Daily() {
                     })
                 }
             </div>
-            <TextField
-                id="answer-field"
-                label="Answer"
-                inputRef={answerFieldRef}
-                value={answerField}
-                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                    setAnswerField(event.target.value);
+            <div
+                css={{
+                    display: "flex",
+                    flexDirection: "row",
+                    gap: "4px",
+                    alignItems: "center",
                 }}
-                onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
-                    if (event.key === "Enter") {
+            >
+                <TextField
+                    id="answer-field"
+                    label="Answer"
+                    inputRef={answerFieldRef}
+                    value={answerField}
+                    onBeforeInput={(event: React.InputEvent<HTMLInputElement>) => {
+                        if (event.data?.includes(" ")) {
+                            event.preventDefault();
+                            return;
+                        }
+                    }}
+                    onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                        setAnswerField(event.target.value);
+                    }}
+                    onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
+                        if (event.key === "Enter") {
+                            if (selectedWord) {
+                                handleAnswer(difficulty, currentWords.indexOf(selectedWord), answerField);
+                            }
+                        }
+                    }}
+                    disabled={continueable}
+                />
+                <IconButton
+                    onClick={() => {
                         if (selectedWord) {
                             handleAnswer(difficulty, currentWords.indexOf(selectedWord), answerField);
                         }
-                    }
-                }}
-                disabled={continueable}
-            />
+                    }}
+                    disabled={!selectedWord}
+                >
+                    <ArrowForward />
+                </IconButton>
+            </div>
             {
                 continueable &&
                 <Button
