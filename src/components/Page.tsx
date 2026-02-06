@@ -1,7 +1,7 @@
 /** @jsxImportSource @emotion/react */
+import { createContext, useContext, useState } from "react";
 import { Outlet } from "react-router";
 import { Header } from "./Header";
-import { createContext, useContext, useState } from "react";
 
 interface HeaderData {
     title: string;
@@ -28,7 +28,7 @@ export function Page() {
                 <div css={{
                     height: "100vh",
                     width: "100vw",
-                    overflow: "clip",
+                    overflow: "auto",
                     display: "flex",
                     flexDirection: "column",
                     // backgroundColor: "theme.page",

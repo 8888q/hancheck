@@ -5,6 +5,7 @@ import type { HSKWord } from "../lib/interfaces";
 import { Button } from "@mui/material";
 import { useNavigate } from "react-router";
 import { ArrowForward, ContentCopy } from "@mui/icons-material";
+import { evaluateAnswer } from "../lib/utils";
 
 interface DailyResultsProps {
     allAnswers: string[][];
@@ -24,15 +25,15 @@ export function DailyResults({ allAnswers, easyWords, mediumWords, hardWords, se
     const navigate = useNavigate();
     const numCols = 5;
     const easyScore = allAnswers[Difficulty.Easy].map((answer, index) => {
-        return answer === easyWords[index].pinyin_toneless;
+        return evaluateAnswer(answer, easyWords[index]);
     });
     const easyScoreString = easyScore.map((score) => score ? "🟩" : "🟥").join("");
     const mediumScore = allAnswers[Difficulty.Medium].map((answer, index) => {
-        return answer === mediumWords[index].pinyin_toneless;
+        return evaluateAnswer(answer, mediumWords[index]);
     });
     const mediumScoreString = mediumScore.map((score) => score ? "🟩" : "🟥").join("");
     const hardScore = allAnswers[Difficulty.Hard].map((answer, index) => {
-        return answer === hardWords[index].pinyin_toneless;
+        return evaluateAnswer(answer, hardWords[index]);
     });
     const hardScoreString = hardScore.map((score) => score ? "🟩" : "🟥").join("");
 
@@ -161,6 +162,6 @@ export function DailyResults({ allAnswers, easyWords, mediumWords, hardWords, se
                     }
                 </tbody>
             </table>
-        </div >
+        </div>
     )
 }

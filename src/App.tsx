@@ -1,7 +1,7 @@
 // import { useState } from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router'
-import { Homepage } from './components/Homepage'
 import { Daily } from './components/Daily'
+import { Homepage } from './components/Homepage'
 import { Page } from './components/Page'
 import { Practice } from './components/Practice'
 
@@ -14,7 +14,7 @@ function App() {
         <Route path="/" element={<Page />}>
           <Route index element={<Homepage />} />
           <Route path="/daily" element={<Daily />} />
-          <Route path="/practice/:difficulty" element={<Practice />} />
+          <Route path="/practice/:difficultyParam" element={<Practice />} />
         </Route>
       </Routes>
     </BrowserRouter>

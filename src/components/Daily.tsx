@@ -1,13 +1,14 @@
 /** @jsxImportSource @emotion/react */
-import { useEffect, useMemo, useRef, useState } from "react";
-import type { HSKWord } from "../lib/interfaces";
-import hsk_dict from "../lib/data.json";
-import seedrandom from "seedrandom";
-import { Difficulty } from "../lib/enums";
-import { Button, IconButton, TextField } from "@mui/material";
 import { ArrowForward, PlayArrow } from "@mui/icons-material";
+import { Button, IconButton, TextField } from "@mui/material";
+import { useEffect, useMemo, useRef, useState } from "react";
+import seedrandom from "seedrandom";
+import hsk_dict from "../lib/data.json";
+import { Difficulty, PlayingState } from "../lib/enums";
+import type { HSKWord } from "../lib/interfaces";
 import { DailyResults } from "./DailyResults";
 import { useHeaderData } from "./Page";
+import { evaluateAnswer } from "../lib/utils";
 
 function getSeed(): number {
     const now_num = (new Date()).getTime();
@@ -42,11 +43,6 @@ function getHardWords(seed: number): HSKWord[] {
     return getFiveRandomWords(combined, seed);
 }
 
-enum DailyState {
-    Playing = 0,
-    Results = 1,
-}
-
 export function Daily() {
     const seed = useMemo(() => {
         return getSeed();
@@ -65,7 +61,7 @@ export function Daily() {
     }, [seed]);
 
     const [difficulty, setDifficulty] = useState(Difficulty.Easy);
-    const [state, setState] = useState(DailyState.Playing);
+    const [state, setState] = useState(PlayingState.Playing);
     const [currentWords, setCurrentWords] = useState<HSKWord[]>(easyWords);
     const [selectedWord, setSelectedWord] = useState<HSKWord | null>(easyWords[0]);
     const [answerField, setAnswerField] = useState<string>("");
@@ -75,12 +71,12 @@ export function Daily() {
 
     const { title, setTitle } = useHeaderData();
     useEffect(() => {
-        if (state === DailyState.Playing) {
+        if (state === PlayingState.Playing) {
             setTitle("Daily");
         } else {
             setTitle("Results");
         }
-    }, [title,state]);
+    }, [title, state]);
 
     const continueable = useMemo(() => {
         return roundAnswers.every(answer => answer !== null);
@@ -95,14 +91,16 @@ export function Daily() {
     }
 
     function handleAnswer(difficulty: Difficulty, index: number, answer: string) {
-        if (!selectedWord) return;
+        if (!selectedWord || answer.length === 0) {
+            return;
+        }
         const newRoundAnswers = [...roundAnswers];
-        newRoundAnswers[index] = answer === selectedWord.pinyin_toneless;
+        newRoundAnswers[index] = evaluateAnswer(answer, selectedWord);
         const newAllAnswers = [...allAnswers];
         newAllAnswers[difficulty][index] = answer;
         setRoundAnswers(newRoundAnswers);
         setAllAnswers(newAllAnswers);
-        if(!newRoundAnswers.every(answer => answer !== null)) {
+        if (!newRoundAnswers.every(answer => answer !== null)) {
             setSelectedWord(currentWords[selectNextWord(index)]);
         } else {
             setSelectedWord(null);
@@ -125,7 +123,7 @@ export function Daily() {
                 setSelectedWord(hardWords[0]);
                 break;
             case Difficulty.Hard:
-                setState(DailyState.Results);
+                setState(PlayingState.Results);
                 break;
         }
         setTimeout(() => {
@@ -133,7 +131,7 @@ export function Daily() {
         }, 100);
     }
 
-    if (state === DailyState.Results) {
+    if (state === PlayingState.Results) {
         return <DailyResults allAnswers={allAnswers} easyWords={easyWords} mediumWords={mediumWords} hardWords={hardWords} seed={seed} />
     }
 
@@ -149,11 +147,8 @@ export function Daily() {
         }}>
             <p
                 className="han-display"
-                css={{
-                    fontSize: "120px",
-                }}
             >
-                {selectedWord?.simplified ?? "?"}
+                {selectedWord?.simplified ?? "😱"}
             </p>
             <div css={{
                 display: "flex",

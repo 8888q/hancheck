@@ -1,10 +1,12 @@
 /** @jsxImportSource @emotion/react */
-import { Button, Radio, RadioGroup, FormControlLabel, FormControl, FormLabel } from "@mui/material";
-import { useNavigate } from "react-router";
-import { useEffect, useState } from "react";
 import { CalendarMonth, FitnessCenter } from "@mui/icons-material";
+import { Button, FormControl, FormControlLabel, FormLabel, Radio, RadioGroup } from "@mui/material";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
 import { Difficulty } from "../lib/enums";
 import { useHeaderData } from "./Page";
+import { DIFFICULTY_NAMES } from "../lib/constants";
+import { capitalizeFirstLetter } from "../lib/utils";
 
 export function Homepage() {
     const { title, setTitle } = useHeaderData();
@@ -33,13 +35,12 @@ export function Homepage() {
             </Button>
             <br />
             <Button variant="contained" color="primary" onClick={() => {
-                navigate("/practice");
+                navigate(`/practice/${DIFFICULTY_NAMES[difficulty]}`);
             }}
-                disabled={true}
+                // disabled={true}
                 endIcon={<FitnessCenter />}
             >
                 practice
-                (Coming Soon)
             </Button>
             <FormControl>
                 <FormLabel id="difficulty-label">Difficulty</FormLabel>
@@ -50,9 +51,9 @@ export function Homepage() {
                     value={difficulty}
                     onChange={(e) => setDifficulty(e.target.value as unknown as Difficulty)}
                 >
-                    <FormControlLabel value={Difficulty.Easy} control={<Radio />} label="Easy" />
-                    <FormControlLabel value={Difficulty.Medium} control={<Radio />} label="Medium" />
-                    <FormControlLabel value={Difficulty.Hard} control={<Radio />} label="Hard" />
+                    <FormControlLabel value={Difficulty.Easy} control={<Radio />} label={capitalizeFirstLetter(DIFFICULTY_NAMES[Difficulty.Easy])} />
+                    <FormControlLabel value={Difficulty.Medium} control={<Radio />} label={capitalizeFirstLetter(DIFFICULTY_NAMES[Difficulty.Medium])} />
+                    <FormControlLabel value={Difficulty.Hard} control={<Radio />} label={capitalizeFirstLetter(DIFFICULTY_NAMES[Difficulty.Hard])} />
                 </RadioGroup>
             </FormControl>
         </div>
