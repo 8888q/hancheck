@@ -6,8 +6,8 @@ export function capitalizeFirstLetter(string: string): string {
 
 export function evaluateAnswer(answer: string, word: HSKWord, method: "toneless" | "tones" = "toneless"): boolean {
     if (method === "toneless") {
-        return answer.toLowerCase() === word.pinyin_toneless.toLowerCase();
+        return answer.toLowerCase().replace(/v/g, "ü").replace(/'/g, "") === word.pinyin_toneless.toLowerCase().replace(/'/g, "");
     } else {
-        return answer.toLowerCase() === word.pinyin_num.toLowerCase();
+        return answer.toLowerCase().replace(/v/g, "ü").replace(/'/g, "") === word.pinyin_num.toLowerCase().replace(/'/g, "");
     }
 }
