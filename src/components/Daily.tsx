@@ -10,7 +10,7 @@ import { DailyResults } from "./DailyResults";
 import { useHeaderData } from "./Page";
 import { evaluateAnswer } from "../lib/utils";
 
-function getSeed(): number {
+export function getSeed(): number {
     const now_num = (new Date()).getTime();
     const day_num = Math.floor(now_num / (1000 * 60 * 60 * 24));
     return day_num;

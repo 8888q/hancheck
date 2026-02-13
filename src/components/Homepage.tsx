@@ -1,17 +1,32 @@
 /** @jsxImportSource @emotion/react */
-import { CalendarMonth, FitnessCenter } from "@mui/icons-material";
-import { Button, FormControl, FormControlLabel, FormLabel, Radio, RadioGroup } from "@mui/material";
-import { useEffect, useState } from "react";
+import { BugReport, CalendarMonth, FitnessCenter } from "@mui/icons-material";
+import { Button, FormControl, FormControlLabel, FormLabel, IconButton, Radio, RadioGroup } from "@mui/material";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { Difficulty } from "../lib/enums";
 import { useHeaderData } from "./Page";
 import { DIFFICULTY_NAMES } from "../lib/constants";
 import { capitalizeFirstLetter } from "../lib/utils";
+import { getSeed } from "./Daily";
+import seedrandom from "seedrandom";
 
 export function Homepage() {
     const { title, setTitle } = useHeaderData();
     const navigate = useNavigate();
     const [difficulty, setDifficulty] = useState(Difficulty.Easy);
+    const [debugOpen, setDebugOpen] = useState(false);
+
+    const now_num = useMemo(() => {
+        return new Date().getTime();
+    }, []);
+    const seed = useMemo(() => {
+        return getSeed();
+    }, []);
+    const first_five_random_output = useMemo(() => {
+        const random = seedrandom(seed.toString());
+        return [random(), random(), random(), random(), random()];
+    }, [seed]);
+
 
     useEffect(() => {
         setTitle("HanCheck");
@@ -56,6 +71,25 @@ export function Homepage() {
                     <FormControlLabel value={Difficulty.Hard} control={<Radio />} label={capitalizeFirstLetter(DIFFICULTY_NAMES[Difficulty.Hard])} />
                 </RadioGroup>
             </FormControl>
+            {
+                debugOpen &&
+                <div>
+                    <p>Debug</p>
+                    <p>
+                        now_num: {now_num}
+                        <br />
+                        seed: {seed}
+                        <br />
+                        first_five_random_output: {first_five_random_output.join(", ")}
+                    </p>
+                </div>
+            }
+            <IconButton onClick={() => setDebugOpen(!debugOpen)} sx={{
+                marginLeft: "auto",
+                marginTop: "auto",
+            }}>
+                <BugReport />
+            </IconButton>
         </div>
     )
 }
