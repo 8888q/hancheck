@@ -18,7 +18,13 @@ export function getSeed(): number {
 
 function getFiveRandomWords(arr: HSKWord[], seed: number): HSKWord[] {
     const random = seedrandom(seed.toString());
-    const shuffled = arr.sort(() => random() - 0.5);
+    // Create a copy to avoid mutating the original array
+    const shuffled = [...arr];
+    // Fisher-Yates shuffle algorithm - deterministic across all JS engines
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
     return shuffled.slice(0, 5);
 }
 
